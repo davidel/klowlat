@@ -371,7 +371,7 @@ int main(int ac, const char * const *av)
 {
     int i, sched_policy = SCHED_FIFO, sched_prio = -1;
     time_t test_time = 5;
-    size_t n, ncpus = 0, nsamples = 10000, stk_size = 1024 * 1024;
+    size_t n, ncpus = 0, nsamples = 100000, stk_size = 1024 * 1024;
     int cpus[MAX_CPUS];
     struct bench_ctx **ctxs;
 
