@@ -79,17 +79,13 @@ class llctx:
                                         int(mx.group(2)) + 1))
         return llcpus
 
-    def sub_cpus(self, bset, sset):
-        rset = []
-        for b in bset:
-            add = True
-            for s in sset:
-                if s == b:
-                    add = False
-                    break
-            if add:
-                rset.append(b)
-        return rset
+    def sub_cpus(self, bcpus, scpus):
+        sset = frozenset(scpus)
+        rcpus = []
+        for b in bcpus:
+            if not b in sset:
+                rcpus.append(b)
+        return rcpus
 
     def append_cpus(self, clist, base, last):
         if clist:
