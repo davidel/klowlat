@@ -21,7 +21,7 @@ class llctx:
         self.dbg_level = dbg_level
         self.mcp_interval = 0
         self.cmdline = self.read_kernel_cmdline()
-        self.num_cpus = self.get_cpu_cpunt()
+        self.num_cpus = self.get_cpu_count()
         self.llcpus = self.get_ll_cpus(self.cmdline, self.num_cpus)
         self.iocpus = self.sub_cpus(range(0, self.num_cpus), self.llcpus)
 
@@ -37,7 +37,7 @@ class llctx:
             if newl:
                 os.sys.stderr.write(newl)
 
-    def get_cpu_cpunt(self):
+    def get_cpu_count(self):
         count = 0
         ci = open('/proc/cpuinfo', 'r')
         for line in ci:
