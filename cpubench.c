@@ -374,7 +374,7 @@ int main(int ac, const char * const *av)
     time_t test_time = 5;
     size_t n, ncpus = 0, nsamples = 10000, stk_size = 1024 * 1024;
     int cpus[MAX_CPUS];
-    struct bench_ctx *ctxs;
+    struct bench_ctx **ctxs;
 
     setup_environment(ac, av);
 
@@ -405,10 +405,11 @@ int main(int ac, const char * const *av)
     if (sched_prio < 0)
         sched_prio = sched_get_priority_max(sched_policy);
 
-    ctxs = calloc(ncpus, sizeof(struct bench_ctx));
+    ctxs = calloc(ncpus, sizeof(struct bench_ctx *));
 
     for (n = 0; n < ncpus; n++) {
-        struct bench_ctx *ctx = ctxs + n;
+        struct bench_ctx *ctx =
+            numa_cpu_zalloc(cpus[n], sizeof(struct bench_ctx));
         pthread_attr_t attr;
 
         pthread_attr_init(&attr);
@@ -431,15 +432,16 @@ int main(int ac, const char * const *av)
             exit(2);
         }
         pthread_attr_destroy(&attr);
+        ctxs[n] = ctx;
     }
 
     for (n = 0; n < ncpus; n++) {
-        struct bench_ctx *ctx = ctxs + n;
+        struct bench_ctx *ctx = ctxs[n];
 
         pthread_join(ctx->tid, NULL);
     }
     for (n = 0; n < ncpus; n++) {
-        struct bench_ctx *ctx = ctxs + n;
+        struct bench_ctx *ctx = ctxs[n];
         struct sstat st;
 
         stat_compute(ctx->samples, ctx->count, &st);
