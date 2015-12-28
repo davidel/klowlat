@@ -337,8 +337,7 @@ static size_t parse_cpu_list(const char *str, int *cpus, size_t ncpus)
 static void stat_compute(uint64_t *smps, size_t n, struct sstat *st)
 {
     size_t i;
-    uint64_t sum;
-    double dsum;
+    double sum;
 
     memset(st, 0, sizeof(*st));
     if (n > 0) {
@@ -349,15 +348,15 @@ static void stat_compute(uint64_t *smps, size_t n, struct sstat *st)
 
         sum = 0;
         for (i = 0; i < n; i++)
-            sum += smps[i];
-        st->savg = (double) sum / (double) n;
-        dsum = 0;
+            sum += (double) smps[i];
+        st->savg = sum / (double) n;
+        sum = 0;
         for (i = 0; i < n; i++) {
             double d = (double) smps[i] - st->savg;
 
-            dsum += d * d;
+            sum += d * d;
         }
-        st->sdev = sqrt(dsum / (double) n);
+        st->sdev = sqrt(sum / (double) n);
     }
 }
 
