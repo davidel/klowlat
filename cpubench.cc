@@ -55,32 +55,6 @@ static void cleanup_cpu_environment(struct bench_ctx *ctx)
     enable_speed_step(ctx->cpu, 1);
 }
 
-static uint64_t accum(uint64_t sum) __attribute__((optimize(0)));
-
-static uint64_t accum(uint64_t sum)
-{
-    uint64_t i;
-
-    for (i = 0; i < 1000; i++)
-        sum += i;
-    for (i = 0; i < 1000; i++)
-        sum -= i;
-
-    return sum;
-}
-
-static uint64_t loop_cycles(size_t n) __attribute__((optimize(0)));
-
-static uint64_t loop_cycles(size_t n)
-{
-    uint64_t scy, s = 0;
-
-    scy = tsc_read();
-    for (; n; n--)
-        s += accum(s);
-    return tsc_read() - scy + s;
-}
-
 static int cmp_samples(const void *s1, const void *s2)
 {
     const uint64_t *u1 = (const uint64_t *) s1, *u2 = (const uint64_t *) s2;

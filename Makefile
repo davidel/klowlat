@@ -5,6 +5,8 @@ CC=g++
 # which cannot be static. Safe to ignore.
 CFLAGS=-static -O2 -g -D_GNU_SOURCE
 
+all: cpubench jitter_test
+
 cpubench: cpubench.cc hsort.cc util.cc
 	$(CC) $(CFLAGS) -o $@ $^ -lpthread -lm -lrt -lnuma
 

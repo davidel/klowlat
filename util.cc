@@ -7,6 +7,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,7 +21,29 @@
 #include <numaif.h>
 #include "util.h"
 
-uint64_t get_nstime(void)
+uint64_t accum(uint64_t sum)
+{
+    register uint64_t i;
+
+    for (i = 0; i < 1000; i++)
+        sum += i;
+    for (i = 0; i < 1000; i++)
+        sum -= i;
+
+    return sum;
+}
+
+uint64_t loop_cycles(size_t n)
+{
+    register uint64_t scy, s = 0;
+
+    scy = tsc_read();
+    for (; n; n--)
+        s += accum(s);
+    return tsc_read() - scy + s;
+}
+
+uint64_t get_nstime()
 {
     struct timespec ts;
 
@@ -205,4 +228,31 @@ void parse_irqs(irq_map &irqm)
 		}
 	}
 	fclose(file);
+}
+
+void diff_irqs(const irq_map &irqm1, const irq_map &irqm2, irq_map &irqmd)
+{
+	for (irq_map::const_iterator it2 = irqm2.begin(); it2 != irqm2.end(); ++it2) {
+		irq_map::const_iterator it1 = irqm1.find(it2->first);
+
+		if (it1 == irqm1.end()) {
+			irqmd.insert(*it2);
+		} else {
+			irq_map::iterator
+				it = irqmd.insert(irq_map::value_type(it2->first, irq_vector())).first;
+			size_t n = it1->second.size();
+
+			it->second.reserve(n + 1);
+			for (size_t i = 0; i < n; i++)
+				it->second.push_back(it2->second[i] - it1->second[i]);
+		}
+	}
+}
+
+void show_irqs(const irq_map &irqm, size_t cpuno, FILE *file)
+{
+	for (irq_map::const_iterator it = irqm.begin(); it != irqm.end(); ++it) {
+		if (it->second[cpuno] != 0)
+			fprintf(file, "%s: %" PRIu64 "\n", it->first.c_str(), it->second[cpuno]);
+	}
 }
