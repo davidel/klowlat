@@ -18,7 +18,6 @@
 #include "hsort.h"
 #include "util.h"
 
-#define MAX_CPUS 1024
 #define RU_DIFF(p, r2, r1, f) (p)->f = (r2)->f - (r1)->f
 
 struct bench_ctx {
@@ -84,7 +83,7 @@ static uint64_t loop_cycles(size_t n)
 
 static int cmp_samples(const void *s1, const void *s2)
 {
-    const uint64_t *u1 = s1, *u2 = s2;
+    const uint64_t *u1 = (const uint64_t *) s1, *u2 = (const uint64_t *) s2;
 
     return *u1 < *u2 ? -1 : (*u1 > *u2 ? +1 : 0);
 }
@@ -114,7 +113,7 @@ static uint64_t *compact_samples(uint64_t *sptr, uint64_t *tptr)
 static void *bench_thread(void *data)
 {
     static const size_t loops_per_cycle = 4;
-    struct bench_ctx *ctx = data;
+    struct bench_ctx *ctx = (struct bench_ctx *) data;
     uint64_t test_cycles, lcy;
     size_t i, test_loops;
     uint64_t *sptr, *eptr;
@@ -231,10 +230,10 @@ int main(int ac, const char * const *av)
     if (sched_prio < 0)
         sched_prio = sched_get_priority_max(sched_policy);
 
-    ctxs = calloc(ncpus, sizeof(struct bench_ctx *));
+    ctxs = (struct bench_ctx **) calloc(ncpus, sizeof(struct bench_ctx *));
 
     for (n = 0; n < ncpus; n++) {
-        struct bench_ctx *ctx =
+        struct bench_ctx *ctx = (struct bench_ctx *)
             numa_cpu_zalloc(cpus[n], sizeof(struct bench_ctx));
         pthread_attr_t attr;
 
@@ -251,8 +250,8 @@ int main(int ac, const char * const *av)
         ctx->sched_policy = sched_policy;
         ctx->sched_prio = sched_prio;
         ctx->nsamples = nsamples;
-        ctx->samples = numa_cpu_zalloc(ctx->cpu,
-                                       ctx->nsamples * sizeof(uint64_t));
+        ctx->samples = (uint64_t *)
+			numa_cpu_zalloc(ctx->cpu, ctx->nsamples * sizeof(uint64_t));
         if (pthread_create(&ctx->tid, &attr, bench_thread, ctx)) {
             perror("pthread_create");
             exit(2);

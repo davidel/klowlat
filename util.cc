@@ -1,4 +1,7 @@
 
+#include <string>
+#include <vector>
+#include <map>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/mman.h>
@@ -60,7 +63,7 @@ void thread_set_cpu(int cpu)
 
     node = numa_node_of_cpu(cpu);
     nbits = ((node + bits_per_long) / bits_per_long) * bits_per_long;
-    nmask = calloc(nbits / bits_per_long, sizeof(unsigned long));
+    nmask = (unsigned long *) calloc(nbits / bits_per_long, sizeof(unsigned long));
     nmask[node / bits_per_long] |= 1 << (node % bits_per_long);
     if (set_mempolicy(MPOL_BIND, nmask, nbits)) {
         perror("set_mempolicy");
@@ -178,4 +181,28 @@ size_t parse_cpu_list(const char *str, int *cpus, size_t ncpus)
     free(dstr);
 
     return n;
+}
+
+void parse_irqs(irq_map &irqm)
+{
+	size_t ncpus = sysconf(_SC_NPROCESSORS_ONLN);
+	FILE *file = fopen("/proc/interrupts", "r");
+	char buffer[4096];
+
+	if (fgets(buffer, sizeof(buffer), file)) {
+		while (fgets(buffer, sizeof(buffer), file)) {
+			char *name, *ptr, *sptr;
+
+			if (!(name = strtok_r(buffer, ": \t\r\n", &sptr)))
+				continue;
+
+			irq_map::iterator
+				it = irqm.insert(irq_map::value_type(name, irq_vector())).first;
+
+			it->second.reserve(ncpus + 1);
+			while ((ptr = strtok_r(NULL, ": \t\r\n", &sptr)))
+				it->second.push_back(strtoul(ptr, NULL, 10));
+		}
+	}
+	fclose(file);
 }

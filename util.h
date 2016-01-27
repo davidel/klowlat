@@ -1,11 +1,19 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+#include <map>
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdio.h>
 
+#define MAX_CPUS 1024
+
 #define GET_PCT(p, n, x) ((p)[(size_t) ((double) (n) * (double) (x))])
+
+typedef std::vector<uint64_t> irq_vector;
+typedef std::map<std::string, irq_vector> irq_map;
 
 static __attribute__((always_inline)) inline uint64_t tsc_read(void)
 {
@@ -26,3 +34,4 @@ void *numa_cpu_zalloc(int cpu, size_t size);
 int enable_speed_step(int cpu, int on);
 void setup_environment(int ac, const char * const *av);
 size_t parse_cpu_list(const char *str, int *cpus, size_t ncpus);
+void parse_irqs(irq_map &irqm);
