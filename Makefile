@@ -5,7 +5,7 @@ CC=gcc
 # which cannot be static. Safe to ignore.
 CFLAGS=-static -O2 -g -D_GNU_SOURCE
 
-cpubench: cpubench.c hsort.c
+cpubench: cpubench.c hsort.c util.c
 	$(CC) $(CFLAGS) -o $@ $^ -lpthread -lm -lrt -lnuma
 
 clean:
