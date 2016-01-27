@@ -1,5 +1,6 @@
 
 CC=g++
+
 # To run on devrez machines, we need to build static as they use an old GLIBC.
 # Building static will trigger a linker warning about getaddrinfo used by libnuma,
 # which cannot be static. Safe to ignore.
