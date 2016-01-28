@@ -208,6 +208,7 @@ size_t parse_cpu_list(const char *str, int *cpus, size_t ncpus)
 
 void parse_irqs(irq_map &irqm)
 {
+	static const char * const sepchrs = ": \t\r\n";
 	size_t ncpus = sysconf(_SC_NPROCESSORS_ONLN);
 	FILE *file = fopen("/proc/interrupts", "r");
 	char buffer[4096];
@@ -216,14 +217,14 @@ void parse_irqs(irq_map &irqm)
 		while (fgets(buffer, sizeof(buffer), file)) {
 			char *name, *ptr, *sptr;
 
-			if (!(name = strtok_r(buffer, ": \t\r\n", &sptr)))
+			if (!(name = strtok_r(buffer, sepchrs, &sptr)))
 				continue;
 
 			irq_map::iterator
 				it = irqm.insert(irq_map::value_type(name, irq_vector())).first;
 
 			it->second.reserve(ncpus + 1);
-			while ((ptr = strtok_r(NULL, ": \t\r\n", &sptr)))
+			while ((ptr = strtok_r(NULL, sepchrs, &sptr)))
 				it->second.push_back(strtoul(ptr, NULL, 10));
 		}
 	}

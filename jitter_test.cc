@@ -16,9 +16,9 @@
 #include <sched.h>
 #include "util.h"
 
-static size_t calibrate(time_t tt)
+static size_t calibrate(double tt)
 {
-	size_t n = 1000;
+	size_t n = 20000;
 	uint64_t ts = get_nstime();
 
 	loop_cycles(n);
@@ -26,7 +26,7 @@ static size_t calibrate(time_t tt)
 	uint64_t dt = get_nstime() - ts;
 	double txl = (double) dt / (double) n;
 
-	return (size_t) ((1e9 * (double) tt) / txl);
+	return (size_t) ((1e9 * tt) / txl);
 }
 
 static void usage(const char *prg)
@@ -39,7 +39,7 @@ static void usage(const char *prg)
 int main(int ac, const char * const *av)
 {
     int i, sched_policy = SCHED_FIFO, sched_prio = -1, cpuno = 0;
-    time_t test_time = 5;
+    double test_time = 5.0;
 
     setup_environment(ac, av);
 
@@ -49,7 +49,7 @@ int main(int ac, const char * const *av)
                 cpuno = atoi(av[i]);
         } else if (!strcmp(av[i], "-t")) {
             if (++i < ac)
-                test_time = strtoul(av[i], NULL, 0);
+                test_time = atof(av[i]);
         } else if (!strcmp(av[i], "-R")) {
             sched_policy = SCHED_RR;
         } else if (!strcmp(av[i], "-P")) {
