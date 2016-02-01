@@ -215,13 +215,13 @@ void parse_irqs(irq_map &irqm)
 
 	if (fgets(buffer, sizeof(buffer), file)) {
 		while (fgets(buffer, sizeof(buffer), file)) {
-			char *name, *ptr, *sptr;
+			char *ptr, *sptr;
 
-			if (!(name = strtok_r(buffer, sepchrs, &sptr)))
+			if (!(ptr = strtok_r(buffer, sepchrs, &sptr)))
 				continue;
 
 			irq_map::iterator
-				it = irqm.insert(irq_map::value_type(name, irq_vector())).first;
+				it = irqm.insert(irq_map::value_type(ptr, irq_vector())).first;
 
 			it->second.reserve(ncpus + 1);
 			while ((ptr = strtok_r(NULL, sepchrs, &sptr)))
